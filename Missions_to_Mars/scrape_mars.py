@@ -46,7 +46,7 @@ def scrape():
         for j in range(len(text)):
             teasers.append(text[j].text)
             latest_text = teasers[0]
-
+    #  
 
     # In[6]:
 
@@ -71,10 +71,10 @@ def scrape():
         
     #     featured_img_url = url_2 + featured_img
         featured_img_path = featured_img[23:75]
-        featured_img_url = url_2 + featured_img_path
+        featured_img_url = "https://www.jpl.nasa.gov" + featured_img_path
         print(featured_img_url)
-
-
+        
+    
     # In[23]:
 
 
@@ -98,7 +98,7 @@ def scrape():
         
         print(mars_weather)
 
-
+     
     # In[39]:
 
 
@@ -109,7 +109,11 @@ def scrape():
 
 
     mars_facts_tables = pd.read_html(url_4)[1]
-
+    table = mars_facts_tables.set_index(0)
+    table.columns = [''] * len(table.columns)
+    table
+    html_table = table.to_html()
+    html_table
 
     # In[42]:
 
@@ -126,46 +130,40 @@ def scrape():
     # In[62]:
 
 
-    for x in range(1,2):
+    titles = ["Cerberus","Schiaparelli","Syrtis Major","Valles Marineris"]
+    hemi_img = []
+    for tit in titles:
+        browser.click_link_by_partial_text(tit)
         html = browser.html
         soup = BeautifulSoup(html,'html.parser')
-        
-        mars_hemis = soup.find_all('img',class_ = "thumb")
-        mars_titles = soup.find_all('a',class_ = "itemLink")
-        hemispheres = []
-        titles = []
-        
-        for hemi in mars_hemis:
-            hemispheres.append("https://astrogeology.usgs.gov" + hemi["src"])
-            
-        for title in mars_titles:
-            titles.append(title.text)
-            
-        for title in titles:
-            if title == '':
-                titles.remove(title)
-            
-        print(titles)
-        
-    df = pd.DataFrame({"Titles":titles,"img_url":hemispheres})
-    df_html = df.to_html()
-    df.head()
+        hemi_img.append(soup.find_all("div", class_="downloads")[0].find_all("a")[0]["href"])
+        browser.back()
 
+    print(hemi_img)
+
+     
 
     # In[ ]:
 
     mars_data = {
         "news_title" : latest_headline,
         "news_p" : latest_text,
-        "featured_image_url" : featured_img_url,
+        "featured_image" : featured_img_url,
         "mars_weather": mars_weather,
-        "mars_facts_table": mars_facts_tables,
-        "hemispheres": df_html
+        "mars_facts_table": html_table,
+        "hemi_names": titles,
+        "hemi_img_url": hemi_img
     }
+    
+    
     print(mars_data)
-    return(mars_data)
+    return mars_data
+
+    browser.quit()
 
 if __name__ == "__main__":
     print(scrape())
+
+#%%
 
 #%%
